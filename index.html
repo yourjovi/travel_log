@@ -72,16 +72,17 @@
 </head>
 <body>
   <div class="wrap">
-   <header>
+    <header>
       <nav>
         <div class="logo">旅行地圖時光機</div>
-        <div class="menu" role="tablist" aria-label="切換內嵌頁面">
-          <button class="tab" id="tab-a" role="tab" aria-controls="panel-a" aria-pressed="true">時間軸模式</button>
-          <button class="tab" id="tab-b" role="tab" aria-controls="panel-b" aria-pressed="false">地圖模式</button>
-          <button class="tab" id="tab-c" role="tab" aria-controls="panel-c" aria-pressed="false">AI日記(Beta)</button>
-          <button class="tab" id="tab-d" role="tab" aria-controls="panel-d" aria-pressed="false">我們頻道</button>
+        <button class="ham" id="ham" aria-label="開啟選單" aria-controls="drawer" aria-expanded="false"><span class="bar"></span></button>
+        <div class="menu" role="tablist">
+          <button class="tab" data-target="a">時光旅行</button>
+          <button class="tab" data-target="b">地圖旅行</button>
+          <button class="tab" data-target="c">AI日記(Beta)</button>
+          <button class="tab" data-target="d">我們頻道</button>
         </div>
-      </nav>
+      </div>
     </header>
 
     <div class="backdrop" id="backdrop"></div>
@@ -91,8 +92,8 @@
         <button class="btn" id="closeDrawer" aria-label="關閉選單">✕</button>
       </div>
       <div class="list" role="tablist" aria-label="手機抽屜選單">
-        <button class="item" data-view="a">時間軸模式</button>
-        <button class="item" data-view="b">地圖模式</button>
+        <button class="item" data-view="a">時光旅行</button>
+        <button class="item" data-view="b">地圖旅行</button>
         <button class="item" data-view="c">AI日記(Beta)</button>
         <button class="item" data-view="d">我們頻道</button>
       </div>
@@ -115,10 +116,10 @@
 
   <script>
     const PAGES = {
-      a: "https://script.google.com/macros/s/AKfycbzgSuUqADNwwQLeIUOMQsG4lrdRqvLknyF3_Ty-V_pnM-Uo3RXLWnhOBqtuTeo_Ua5N/exec", // ← 改成你的「頁面 A」URL
-      b: "https://script.google.com/macros/s/AKfycbzgSuUqADNwwQLeIUOMQsG4lrdRqvLknyF3_Ty-V_pnM-Uo3RXLWnhOBqtuTeo_Ua5N/exec?view=map", // ← 改成你的「頁面 B」URL
-      c: "https://yourjovitraveling.blogspot.com", // ← 改成你的「頁面 C」URL
-      d: "https://youtube.com/@yourjovitravel?si=k0G-bldC8JuEp80m"  // ← 改成你的「頁面 D」URL
+      a: "https://script.google.com/macros/s/AKfycbzgSuUqADNwwQLeIUOMQsG4lrdRqvLknyF3_Ty-V_pnM-Uo3RXLWnhOBqtuTeo_Ua5N/exec",
+      b: "https://script.google.com/macros/s/AKfycbzgSuUqADNwwQLeIUOMQsG4lrdRqvLknyF3_Ty-V_pnM-Uo3RXLWnhOBqtuTeo_Ua5N/exec?view=map",
+      c: "https://yourjovitraveling.blogspot.com/",
+      d: "https://example.com/your-page-D"
     };
 
     const tabs = {
