@@ -33,7 +33,7 @@
       width:40px; height:40px; margin-left:-8px; border-radius:8px; border:1px solid transparent;
       background:transparent; cursor:pointer;
     }
-    .hamburger svg{ width:22px; height:22px; }
+    .hamburger svg{ width:22px; height:22px;stroke:#fff;stroke-width:2; }
     .hamburger[aria-expanded="true"]{ background:rgba(255,255,255,.06); border-color:var(--line); }
 
     /* Drawer + Backdrop */
@@ -74,7 +74,7 @@
     @media (max-width: 900px){
       .menu{ display:none; }                /* hide desktop tabs on mobile */
       .hamburger{ display:flex; }           /* show hamburger */
-      .logo{ padding:10px 0; }              /* a bit tighter on mobile */
+      .logo{ padding:10px 0;font-size:20px; }              /* a bit tighter on mobile */
     }
 
     @media (prefers-reduced-motion: reduce){
