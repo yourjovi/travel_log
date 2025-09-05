@@ -32,7 +32,6 @@
       width:40px; height:40px; margin-left:-8px; border-radius:8px; border:1px solid transparent;
       background:transparent; cursor:pointer;
     }
-    .hamburger:focus{ outline:2px solid var(--accent); outline-offset:2px; }
     .hamburger svg{ width:22px; height:22px; }
     .hamburger[aria-expanded="true"]{ background:rgba(255,255,255,.06); border-color:var(--line); }
 
@@ -53,7 +52,7 @@
     .drawer-body{ padding:6px; }
     .drawer-body .drawer-btn{
       width:100%; text-align:left; display:block; border:1px solid var(--line); background:transparent;
-      color:var(--fg); padding:14px 12px; margin:6px 6px; border-radius:10px; font-weight:600; cursor:pointer;
+      color:var(--fg); padding:14px 12px; margin:6px 6px; border-radius:10px; font-weight:600; cursor:pointer;font-size:14px;
     }
     .drawer-body .drawer-btn[aria-pressed="true"]{ border-color:var(--accent); color:var(--accent); }
     .drawer-body .drawer-btn:hover{ background:rgba(255,255,255,.04); }
@@ -68,9 +67,6 @@
     @supports(height:100dvh){ .frame-wrap{ height:calc(100dvh - 60px); } }
     iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; background:#000; border-top:1px solid var(--line); }
     .hidden{ display:none !important; }
-    .hint{ text-align:center; color:var(--muted); font-size:12px; padding:6px 10px; }
-    footer{ border-top:1px solid var(--line); background:var(--card); color:var(--muted); font-size:12px; }
-    .foot{ max-width:1100px; margin:0 auto; padding:10px 16px; }
 
     /* ===== Responsive ===== */
     @media (max-width: 900px){
@@ -98,8 +94,8 @@
 
         <!-- Desktop tabs -->
         <div class="menu" role="tablist" aria-label="切換內嵌頁面">
-          <button class="tab" id="tab-a" role="tab" aria-controls="panel-a" aria-pressed="true">時間軸模式</button>
-          <button class="tab" id="tab-b" role="tab" aria-controls="panel-b" aria-pressed="false">地圖模式</button>
+          <button class="tab" id="tab-a" role="tab" aria-controls="panel-a" aria-pressed="true">時光旅行</button>
+          <button class="tab" id="tab-b" role="tab" aria-controls="panel-b" aria-pressed="false">地圖旅行</button>
           <button class="tab" id="tab-c" role="tab" aria-controls="panel-c" aria-pressed="false">AI日記(Beta)</button>
           <button class="tab" id="tab-d" role="tab" aria-controls="panel-d" aria-pressed="false">我們頻道</button>
         </div>
@@ -118,8 +114,8 @@
         </button>
       </div>
       <div class="drawer-body">
-        <button class="drawer-btn" data-tab="a" aria-pressed="true">時間軸模式</button>
-        <button class="drawer-btn" data-tab="b" aria-pressed="false">地圖模式</button>
+        <button class="drawer-btn" data-tab="a" aria-pressed="true">時光旅行</button>
+        <button class="drawer-btn" data-tab="b" aria-pressed="false">地圖旅行</button>
         <button class="drawer-btn" data-tab="c" aria-pressed="false">AI日記(Beta)</button>
         <button class="drawer-btn" data-tab="d" aria-pressed="false">我們頻道</button>
       </div>
@@ -132,12 +128,7 @@
         <iframe id="panel-c" title="頁面 C" class="hidden" loading="lazy" allow="fullscreen; picture-in-picture"></iframe>
         <iframe id="panel-d" title="頁面 D" class="hidden" loading="lazy" allow="fullscreen; picture-in-picture"></iframe>
       </div>
-      <div class="hint">可用網址參數 ?view=a / b / c / d 直接進到指定分頁。</div>
     </main>
-
-    <footer>
-      <div class="foot">© <span id="y"></span> YourJovi · GitHub Pages Ready</div>
-    </footer>
   </div>
 
   <script>
