@@ -3,102 +3,101 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#0b1020">
+  <title>旅行地圖時光機</title>
+
+  <!-- Icons & PWA basics -->
   <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/icons/web-app-manifest-192x192.png" sizes="192x192" type="image/png">
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
   <link rel="manifest" href="/manifest.webmanifest">
-  <meta name="theme-color" content="#0b1020">
 
-<!-- iOS 專屬（Safari A2HS）-->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="旅行地圖時光機">
+  <!-- iOS A2HS -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="旅行地圖時光機">
 
+  <!-- Performance hints (safe no-ops if unused) -->
+  <link rel="preconnect" href="https://script.google.com" crossorigin>
+  <link rel="preconnect" href="https://youtube.com" crossorigin>
+  <link rel="preconnect" href="https://i.ytimg.com" crossorigin>
 
-  <title>旅行地圖時光機</title>
   <style>
     :root{
       --bg:#0b1020; --card:#0f152b; --line:#223; --fg:#e9eefc; --muted:#9fb0d1; --accent:#3b82f6;
       --overlay: rgba(0,0,0,.5);
+      --focus: #6aa8ff;
     }
-    html,body{ height:100%; margin:0; background:var(--bg); color:var(--fg);
-      font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans TC",sans-serif; }
+    html, body { margin:0; background:var(--bg); color:var(--fg); font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans TC",sans-serif; }
+
+    /* === Layout wrapper === */
     .wrap{ display:flex; flex-direction:column; min-height:100svh; }
 
-    /* ===== Header & Nav ===== */
+    /* === Header & Nav === */
     header{ position:sticky; top:0; z-index:20; backdrop-filter:saturate(1.4) blur(8px);
       background:rgba(11,16,32,.75); border-bottom:1px solid var(--line); }
-    nav{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:flex-start;padding:0 16px;}
-    .logo{font-weight:700;font-size:18px;letter-spacing:.5px;padding:14px 0;margin-left:10px;}
+    nav{ max-width:1100px; margin:0 auto; display:flex; align-items:center; justify-content:flex-start; padding:0 12px; }
 
-
-    /* Desktop menu */
-    .menu{ display:flex; gap:2px; }
-    .menu button{ all:unset; cursor:pointer; padding:14px 20px; font-weight:600; font-size:15px; color:var(--muted);
-      transition:.25s; border-bottom:2px solid transparent; }
-    .menu button[aria-pressed="true"]{ color:var(--accent); border-color:var(--accent); }
-    .menu button:hover{ color:var(--fg); }
-
-    /* Mobile hamburger (hidden on desktop) */
-    .hamburger{
-      display:none; align-items:center; justify-content:center;
-      width:40px; height:40px; margin-left:-8px; border-radius:8px; border:1px solid transparent;
-      background:transparent; cursor:pointer;
-    }
-    .hamburger svg{ width:22px; height:22px;stroke:#fff;stroke-width:1; }
+    .hamburger{ display:none; align-items:center; justify-content:center; width:40px; height:40px; margin-left:-2px; border-radius:8px; border:1px solid transparent; background:transparent; cursor:pointer; }
+    .hamburger svg{ width:22px; height:22px; }
     .hamburger[aria-expanded="true"]{ background:rgba(255,255,255,.06); border-color:var(--line); }
 
-    /* Drawer + Backdrop */
-    .backdrop{
-      position:fixed; inset:0; background:var(--overlay); opacity:0; pointer-events:none; transition:opacity .2s ease;
-      z-index:18;
-    }
-    .drawer{
-      position:fixed; inset:0 auto 0 0; width:min(80vw, 320px); max-width:90vw; background:var(--card);
-      border-right:1px solid var(--line); transform:translateX(-100%); transition:transform .25s ease;
-      z-index:19; display:flex; flex-direction:column;
-    }
-    .drawer-head{ display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:1px solid var(--line); }
-    .drawer-title{ font-weight:700; }
-    .drawer-close{ all:unset; cursor:pointer; padding:8px; border-radius:8px; }
-    .drawer-close:focus{ outline:2px solid var(--accent); outline-offset:2px; }
-    .drawer-body{ padding:6px; }
-    .drawer-body .drawer-btn{
-      width:100%; text-align:left; display:block; border:1px solid var(--line); background:transparent;
-      color:var(--fg); padding:14px 12px; margin:6px 6px; border-radius:10px; font-weight:600; cursor:pointer;font-size:18px;
-    }
-    .drawer-body .drawer-btn[aria-pressed="true"]{ border-color:var(--accent); color:var(--accent); }
-    .drawer-body .drawer-btn:hover{ background:rgba(255,255,255,.04); }
+    .logo{ font-weight:800; font-size:18px; letter-spacing:.5px; padding:12px 0; margin-left:6px; }
 
-    /* Open states (toggled by .open-drawer on body) */
+    /* Desktop tabs (true tabs w/ a11y) */
+    .tabs{ display:flex; gap:2px; margin-left:8px; }
+    .tab{ appearance:none; border:none; background:transparent; cursor:pointer; padding:14px 18px; font-weight:700; font-size:15px; color:var(--muted); border-bottom:2px solid transparent; }
+    .tab[aria-selected="true"]{ color:var(--accent); border-color:var(--accent); }
+    .tab:hover{ color:var(--fg); }
+
+    /* Focus ring (visible + accessible) */
+    .tab:focus, .hamburger:focus, .drawer-close:focus, .drawer-btn:focus, .action:focus{ outline:2px solid var(--focus); outline-offset:2px; border-radius:10px; }
+
+    /* Mobile drawer */
+    .backdrop{ position:fixed; inset:0; background:var(--overlay); opacity:0; pointer-events:none; transition:opacity .18s ease; z-index:18; }
+    .drawer{ position:fixed; inset:0 auto 0 0; width:min(80vw, 320px); max-width:90vw; background:var(--card); border-right:1px solid var(--line); transform:translateX(-100%); transition:transform .2s ease; z-index:19; display:flex; flex-direction:column; }
+    .drawer-head{ display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:1px solid var(--line); }
+    .drawer-title{ font-weight:800; }
+    .drawer-close{ appearance:none; background:transparent; border:none; cursor:pointer; padding:8px; border-radius:8px; }
+    .drawer-body{ padding:6px; }
+    .drawer-btn{ width:100%; text-align:left; display:block; border:1px solid var(--line); background:transparent; color:var(--fg); padding:14px 12px; margin:6px 6px; border-radius:12px; font-weight:700; cursor:pointer; font-size:18px; }
+    .drawer-btn[aria-pressed="true"]{ border-color:var(--accent); color:var(--accent); }
+    .drawer-btn:hover{ background:rgba(255,255,255,.04); }
+
     .open-drawer .backdrop{ opacity:1; pointer-events:auto; }
     .open-drawer .drawer{ transform:none; }
 
-    /* Layout main/iframe/footer */
+    /* === Main / panels === */
     main{ flex:1; display:flex; }
     .frame-wrap{ position:relative; flex:1; min-height:0; }
-    
-    iframe{position:absolute; inset:0; width:100%; height:100%;border:0;background:transparent;}
-
+    [role="tabpanel"]{ position:absolute; inset:0; }
+    iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; background:var(--bg); }
     .hidden{ display:none !important; }
 
-    /* ===== Responsive ===== */
-    @media (max-width: 900px){
-      .menu{ display:none; }                /* hide desktop tabs on mobile */
-      .hamburger{ display:flex; }           /* show hamburger */
-      .logo{ padding:10px 0;font-size:20px; }              /* a bit tighter on mobile */
-    }
+    /* Skeleton / loader */
+    .loader{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02)); }
+    .spinner{ width:32px; height:32px; border-radius:50%; border:3px solid rgba(255,255,255,.25); border-top-color:rgba(255,255,255,.9); animation:spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-    @media (prefers-reduced-motion: reduce){
-      .backdrop, .drawer{ transition:none; }
+    /* Error state */
+    .error{ position:absolute; inset:0; display:flex; flex-direction:column; gap:12px; align-items:center; justify-content:center; text-align:center; background:rgba(0,0,0,.35); padding:24px; }
+    .action{ appearance:none; border:1px solid var(--line); background:transparent; color:var(--fg); padding:10px 14px; border-radius:10px; cursor:pointer; font-weight:700; }
+    .action:hover{ background:rgba(255,255,255,.06); }
+
+    /* Safe-area padding to avoid bottom black bar on some phones */
+    body{ padding-bottom: env(safe-area-inset-bottom); }
+
+    /* Install/refresh mini toolbar (only in standalone / no URL bar) */
+    .toolbar{ position:fixed; right:12px; bottom:12px; display:flex; gap:8px; z-index:25; }
+    .pill{ background:rgba(255,255,255,.06); border:1px solid var(--line); color:var(--fg); padding:8px 12px; border-radius:999px; font-weight:700; cursor:pointer; backdrop-filter: blur(6px); }
+
+    /* Responsive */
+    @media (max-width: 900px){
+      .tabs{ display:none; }
+      .hamburger{ display:flex; }
+      .logo{ padding:10px 0; font-size:20px; }
     }
-    .tab:focus,
-.drawer-btn:focus,
-.hamburger:focus,
-.drawer-close:focus {
-  outline: none;
-  box-shadow: none;
-}
+    @media (prefers-reduced-motion: reduce){ .backdrop, .drawer{ transition:none; } }
   </style>
 </head>
 <body>
@@ -106,19 +105,16 @@
     <header>
       <nav>
         <button class="hamburger" id="btn-hamburger" aria-label="開啟選單" aria-expanded="false" aria-controls="drawer">
-          <!-- 3-line icon -->
-          <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M4 6h16v2H4zM4 11h16v2H4zM4 16h16v2H4z"/>
-          </svg>
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h16v2H4zM4 11h16v2H4zM4 16h16v2H4z"/></svg>
         </button>
         <div class="logo">旅行地圖時光機</div>
 
-        <!-- Desktop tabs -->
-        <div class="menu" role="tablist" aria-label="切換內嵌頁面">
-          <button class="tab" id="tab-a" role="tab" aria-controls="panel-a" aria-pressed="true">時光旅行</button>
-          <button class="tab" id="tab-b" role="tab" aria-controls="panel-b" aria-pressed="false">地圖旅行</button>
-          <button class="tab" id="tab-c" role="tab" aria-controls="panel-c" aria-pressed="false">AI日記(Beta)</button>
-          <button class="tab" id="tab-d" role="tab" aria-controls="panel-d" aria-pressed="false">我們頻道</button>
+        <!-- Desktop Tabs with proper a11y semantics -->
+        <div class="tabs" role="tablist" aria-label="切換內嵌頁面">
+          <button class="tab" id="tab-timeline" role="tab" aria-selected="true" aria-controls="panel-timeline">時光旅行</button>
+          <button class="tab" id="tab-map" role="tab" aria-selected="false" aria-controls="panel-map">地圖旅行</button>
+          <button class="tab" id="tab-blog" role="tab" aria-selected="false" aria-controls="panel-blog">AI日記 (Beta)</button>
+          <button class="tab" id="tab-channel" role="tab" aria-selected="false" aria-controls="panel-channel">我們頻道</button>
         </div>
       </nav>
     </header>
@@ -129,53 +125,113 @@
       <div class="drawer-head">
         <div class="drawer-title">選單</div>
         <button class="drawer-close" id="btn-close" aria-label="關閉選單">
-          <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-            <path d="M18.3 5.71 12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.29 19.7 2.88 18.29 9.17 12 2.88 5.71 4.29 4.29 10.59 10.6 16.89 4.3z"/>
-          </svg>
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="m18.3 5.71-6.3 6.29 6.3 6.29-1.41 1.42L10.59 13.4 4.29 19.7 2.88 18.29 9.17 12 2.88 5.71 4.29 4.29 10.59 10.6 16.89 4.3z"/></svg>
         </button>
       </div>
       <div class="drawer-body">
-        <button class="drawer-btn" data-tab="a" aria-pressed="true">時光旅行</button>
-        <button class="drawer-btn" data-tab="b" aria-pressed="false">地圖旅行</button>
-        <button class="drawer-btn" data-tab="c" aria-pressed="false">AI日記(Beta)</button>
-        <button class="drawer-btn" data-tab="d" aria-pressed="false">我們頻道</button>
+        <button class="drawer-btn" data-view="timeline" aria-pressed="true">時光旅行</button>
+        <button class="drawer-btn" data-view="map" aria-pressed="false">地圖旅行</button>
+        <button class="drawer-btn" data-view="blog" aria-pressed="false">AI日記 (Beta)</button>
+        <button class="drawer-btn" data-view="channel" aria-pressed="false">我們頻道</button>
+        <button class="drawer-btn" id="btn-refresh" aria-pressed="false">重新整理</button>
       </div>
     </aside>
 
     <main>
       <div class="frame-wrap">
-        <iframe id="panel-a" title="頁面 A" loading="lazy" allow="fullscreen; picture-in-picture"></iframe>
-        <iframe id="panel-b" title="頁面 B" class="hidden" loading="lazy" allow="fullscreen; picture-in-picture"></iframe>
-        <iframe id="panel-c" title="頁面 C" class="hidden" loading="lazy" allow="fullscreen; picture-in-picture"></iframe>
-        <iframe id="panel-d" title="頁面 D" class="hidden" loading="lazy" allow="fullscreen; picture-in-picture"></iframe>
+        <!-- Timeline -->
+        <section id="panel-timeline" role="tabpanel" aria-labelledby="tab-timeline">
+          <div class="loader" data-for="timeline"><div class="spinner" aria-label="載入中"></div></div>
+          <div class="error hidden" data-err="timeline">
+            <div>載入逾時，可能被封鎖或離線。</div>
+            <div>
+              <button class="action" data-retry="timeline">重試</button>
+              <a class="action" target="_blank" rel="noopener" href="https://script.google.com/macros/s/AKfycbyp7GXGv1iYs4i8tXsyx4OdULQi94LjD1f73oq1vZFzkxFoi7zMv9cJLwB_XN_H5UGB/exec">在新分頁開啟</a>
+            </div>
+          </div>
+          <iframe id="frame-timeline" title="時光旅行" loading="lazy" allow="fullscreen; picture-in-picture" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </section>
+
+        <!-- Map -->
+        <section id="panel-map" role="tabpanel" aria-labelledby="tab-map" class="hidden">
+          <div class="loader" data-for="map"><div class="spinner" aria-label="載入中"></div></div>
+          <div class="error hidden" data-err="map">
+            <div>載入逾時，可能被封鎖或離線。</div>
+            <div>
+              <button class="action" data-retry="map">重試</button>
+              <a class="action" target="_blank" rel="noopener" href="https://script.google.com/macros/s/AKfycbyp7GXGv1iYs4i8tXsyx4OdULQi94LjD1f73oq1vZFzkxFoi7zMv9cJLwB_XN_H5UGB/exec?view=map">在新分頁開啟</a>
+            </div>
+          </div>
+          <iframe id="frame-map" title="地圖旅行" loading="lazy" allow="fullscreen; picture-in-picture" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </section>
+
+        <!-- Blog -->
+        <section id="panel-blog" role="tabpanel" aria-labelledby="tab-blog" class="hidden">
+          <div class="loader" data-for="blog"><div class="spinner" aria-label="載入中"></div></div>
+          <div class="error hidden" data-err="blog">
+            <div>載入逾時，可能被封鎖或離線。</div>
+            <div>
+              <button class="action" data-retry="blog">重試</button>
+              <a class="action" target="_blank" rel="noopener" href="https://yourjovitraveling.blogspot.com">在新分頁開啟</a>
+            </div>
+          </div>
+          <iframe id="frame-blog" title="AI日記 (Beta)" loading="lazy" allow="fullscreen; picture-in-picture" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </section>
+
+        <!-- Channel -->
+        <section id="panel-channel" role="tabpanel" aria-labelledby="tab-channel" class="hidden">
+          <div class="loader" data-for="channel"><div class="spinner" aria-label="載入中"></div></div>
+          <div class="error hidden" data-err="channel">
+            <div>載入逾時，可能被封鎖或離線。</div>
+            <div>
+              <button class="action" data-retry="channel">重試</button>
+              <a class="action" target="_blank" rel="noopener" href="https://youtube.com/@yourjovitravel?si=k0G-bldC8JuEp80m">在新分頁開啟</a>
+            </div>
+          </div>
+          <iframe id="frame-channel" title="我們頻道" loading="lazy" allow="fullscreen; picture-in-picture" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </section>
       </div>
     </main>
   </div>
 
+  <!-- Standalone mini toolbar: install & refresh -->
+  <div class="toolbar" id="toolbar" hidden>
+    <button class="pill" id="btn-install" hidden>加到主畫面</button>
+    <button class="pill" id="btn-soft-reload">重新整理</button>
+  </div>
+
   <script>
-    /* ===== Your pages mapping ===== */
+    // ========= Config =========
     const PAGES = {
-      a: "https://script.google.com/macros/s/AKfycbyHMI85-OovvNndR7EX2FqjVDYLlvdn_xlwNWGQTzL2K2BMaFpQbR5LusbrfefLTsoU/exec",
-      b: "https://script.google.com/macros/s/AKfycbyHMI85-OovvNndR7EX2FqjVDYLlvdn_xlwNWGQTzL2K2BMaFpQbR5LusbrfefLTsoU/exec?view=map",
-      c: "https://yourjovitraveling.blogspot.com",
-      d: "https://youtube.com/@yourjovitravel?si=k0G-bldC8JuEp80m"
+      timeline: "https://script.google.com/macros/s/AKfycbyp7GXGv1iYs4i8tXsyx4OdULQi94LjD1f73oq1vZFzkxFoi7zMv9cJLwB_XN_H5UGB/exec",
+      map:      "https://script.google.com/macros/s/AKfycbyp7GXGv1iYs4i8tXsyx4OdULQi94LjD1f73oq1vZFzkxFoi7zMv9cJLwB_XN_H5UGB/exec?view=map",
+      blog:     "https://yourjovitraveling.blogspot.com",
+      channel:  "https://youtube.com/@yourjovitravel?si=k0G-bldC8JuEp80m"
     };
 
-    /* ===== Tab elements ===== */
+    const VIEW_KEYS = ["timeline","map","blog","channel"]; // canonical keys for deep link
+
+    // Elements
     const tabs = {
-      a: document.getElementById('tab-a'),
-      b: document.getElementById('tab-b'),
-      c: document.getElementById('tab-c'),
-      d: document.getElementById('tab-d')
+      timeline: document.getElementById('tab-timeline'),
+      map: document.getElementById('tab-map'),
+      blog: document.getElementById('tab-blog'),
+      channel: document.getElementById('tab-channel')
+    };
+    const panels = {
+      timeline: document.getElementById('panel-timeline'),
+      map: document.getElementById('panel-map'),
+      blog: document.getElementById('panel-blog'),
+      channel: document.getElementById('panel-channel')
     };
     const frames = {
-      a: document.getElementById('panel-a'),
-      b: document.getElementById('panel-b'),
-      c: document.getElementById('panel-c'),
-      d: document.getElementById('panel-d')
+      timeline: document.getElementById('frame-timeline'),
+      map: document.getElementById('frame-map'),
+      blog: document.getElementById('frame-blog'),
+      channel: document.getElementById('frame-channel')
     };
 
-    /* ===== Drawer elements (mobile) ===== */
+    // Drawer
     const body = document.body;
     const backdrop = document.getElementById('backdrop');
     const drawer = document.getElementById('drawer');
@@ -183,83 +239,106 @@
     const btnClose = document.getElementById('btn-close');
     const drawerBtns = Array.from(document.querySelectorAll('.drawer-btn'));
 
+    // Loader & error helpers
+    const loaders = Object.fromEntries(Array.from(document.querySelectorAll('.loader')).map(n=>[n.dataset.for,n]));
+    const errors  = Object.fromEntries(Array.from(document.querySelectorAll('.error')).map(n=>[n.dataset.err,n]));
+
+    function setLoader(which, on){ loaders[which]?.classList.toggle('hidden', !on); }
+    function setError(which, on){ errors[which]?.classList.toggle('hidden', !on); }
+
     function ensureSrc(which){
-      if(PAGES[which] && !frames[which].src){
-        frames[which].src = PAGES[which];
+      const f = frames[which];
+      if (PAGES[which] && !f.src) {
+        f.src = PAGES[which];
+        // Show loader until load or timeout
+        setLoader(which, true);
+        setError(which, false);
+        const t = setTimeout(()=>{ setLoader(which,false); setError(which,true); }, 12000);
+        f.addEventListener('load', ()=>{ clearTimeout(t); setLoader(which,false); setError(which,false); }, { once:true });
       }
     }
 
     function show(which){
-      for(const k of Object.keys(tabs)){
-        tabs[k]?.setAttribute('aria-pressed', k===which);
-        const pressed = (k===which);
-        const dbtn = drawerBtns.find(b=>b.dataset.tab===k);
-        if (dbtn) dbtn.setAttribute('aria-pressed', pressed);
-        frames[k].classList.toggle('hidden', !pressed);
-      }
+      VIEW_KEYS.forEach(k=>{
+        const sel = (k===which);
+        tabs[k].setAttribute('aria-selected', sel);
+        panels[k].classList.toggle('hidden', !sel);
+      });
       ensureSrc(which);
-      history.replaceState(null, '', location.pathname);
-      localStorage.setItem('multiSwitcher:view', which);
+      // Preserve deep link & memory
+      const url = new URL(location.href);
+      url.searchParams.set('view', which);
+      history.replaceState(null, '', url);
+      localStorage.setItem('multi:view', which);
     }
 
-    /* ===== Drawer open/close helpers ===== */
-    function openDrawer(){
-      body.classList.add('open-drawer');
-      drawer.setAttribute('aria-hidden', 'false');
-      btnHamburger.setAttribute('aria-expanded', 'true');
-      backdrop.hidden = false;
-      // focus first button for accessibility
-      setTimeout(()=> drawerBtns[0]?.focus(), 0);
-    }
-    function closeDrawer(){
-      body.classList.remove('open-drawer');
-      drawer.setAttribute('aria-hidden', 'true');
-      btnHamburger.setAttribute('aria-expanded', 'false');
-      backdrop.hidden = true;
-      btnHamburger.focus();
-    }
-
-    // Toggle via hamburger / close button / backdrop
-    btnHamburger.addEventListener('click', () => {
-      const expanded = btnHamburger.getAttribute('aria-expanded') === 'true';
-      expanded ? closeDrawer() : openDrawer();
+    // Desktop tab clicks + keyboard arrows
+    VIEW_KEYS.forEach((k,i)=>{
+      tabs[k].addEventListener('click', ()=> show(k));
+      tabs[k].addEventListener('keydown', (e)=>{
+        if (e.key==='ArrowRight' || e.key==='ArrowLeft'){
+          e.preventDefault();
+          const ni = (e.key==='ArrowRight') ? (i+1)%VIEW_KEYS.length : (i-1+VIEW_KEYS.length)%VIEW_KEYS.length;
+          tabs[VIEW_KEYS[ni]].focus();
+          show(VIEW_KEYS[ni]);
+        }
+      });
     });
+
+    // Drawer open/close
+    function openDrawer(){ body.classList.add('open-drawer'); drawer.setAttribute('aria-hidden','false'); btnHamburger.setAttribute('aria-expanded','true'); backdrop.hidden = false; setTimeout(()=> drawerBtns[0]?.focus(), 0); }
+    function closeDrawer(){ body.classList.remove('open-drawer'); drawer.setAttribute('aria-hidden','true'); btnHamburger.setAttribute('aria-expanded','false'); backdrop.hidden = true; btnHamburger.focus(); }
+    btnHamburger.addEventListener('click', ()=> (btnHamburger.getAttribute('aria-expanded')==='true') ? closeDrawer() : openDrawer());
     btnClose.addEventListener('click', closeDrawer);
     backdrop.addEventListener('click', closeDrawer);
+    window.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && body.classList.contains('open-drawer')) closeDrawer(); });
 
-    // ESC to close
-    window.addEventListener('keydown', (e)=>{
-      if(e.key === 'Escape' && body.classList.contains('open-drawer')) closeDrawer();
-    });
-
-    // Clicking drawer items: switch tab + close drawer
+    // Drawer item clicks
     drawerBtns.forEach(btn=>{
       btn.addEventListener('click', ()=>{
-        const which = btn.dataset.tab;
-        show(which);
+        const v = btn.dataset.view;
+        if (v) show(v);
+        if (btn.id === 'btn-refresh') softReload();
         closeDrawer();
       });
     });
 
-    // Desktop tab clicks
-    for(const k of Object.keys(tabs)){
-      tabs[k].addEventListener('click', ()=> show(k));
+    // Init: compute initial view from ?view= or storage
+    (function init(){
+      const url = new URL(location.href);
+      const qv = (url.searchParams.get('view')||'').toLowerCase();
+      const saved = localStorage.getItem('multi:view');
+      const initial = VIEW_KEYS.includes(qv) ? qv : (VIEW_KEYS.includes(saved) ? saved : 'timeline');
+      show(initial);
+    })();
+
+    // Retry buttons
+    document.querySelectorAll('[data-retry]').forEach(b=> b.addEventListener('click', ()=>{
+      const which = b.getAttribute('data-retry');
+      frames[which].src = ''; // reset
+      setLoader(which, true); setError(which, false);
+      requestAnimationFrame(()=> ensureSrc(which));
+    }));
+
+    // Soft reload for shell (helpful when in standalone w/out URL bar)
+    function softReload(){ Object.values(frames).forEach(f=>{ if (f && f.contentWindow) try { f.contentWindow.location.reload(); } catch{} }); }
+    document.getElementById('btn-soft-reload').addEventListener('click', softReload);
+
+    // PWA install prompt (Android/Chromium). We purposely use neutral copy: "加到主畫面".
+    const toolbar = document.getElementById('toolbar');
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e)=>{ e.preventDefault(); deferredPrompt = e; toolbar.hidden = false; document.getElementById('btn-install').hidden = false; });
+    document.getElementById('btn-install').addEventListener('click', async ()=>{
+      if (!deferredPrompt) return; const choice = await deferredPrompt.prompt(); deferredPrompt = null; document.getElementById('btn-install').hidden = true; });
+
+    // Show toolbar in standalone (iOS/Android) to expose Refresh
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    if (isStandalone) toolbar.hidden = false;
+
+    // Register SW only when same-origin + top-level (won't work inside Google Sites embed)
+    if (window.isSecureContext && window.top === window.self && location.origin === new URL('/', location.href).origin && 'serviceWorker' in navigator){
+      window.addEventListener('load', ()=> navigator.serviceWorker.register('/sw.js').catch(()=>{}));
     }
-
-    // Init year and initial tab
-    const url = new URL(location.href);
-    const qView = (url.searchParams.get('view')||'').toLowerCase();
-    const saved = localStorage.getItem('multiSwitcher:view');
-    const initial = (['a','b','c','d'].includes(qView)) ? qView : (['a','b','c','d'].includes(saved) ? saved : 'a');
-    show(initial);
-
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    const scope = '/'; // 若 repo 子路徑，改成 '/my-repo/'
-    navigator.serviceWorker.register('/sw.js', { scope }).catch(console.error);
-  });
-}
-    
   </script>
 </body>
 </html>
