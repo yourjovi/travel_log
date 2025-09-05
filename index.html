@@ -78,6 +78,13 @@
     @media (prefers-reduced-motion: reduce){
       .backdrop, .drawer{ transition:none; }
     }
+    .tab:focus,
+.drawer-btn:focus,
+.hamburger:focus,
+.drawer-close:focus {
+  outline: none;
+  box-shadow: none;
+}
   </style>
 </head>
 <body>
@@ -226,7 +233,6 @@
     }
 
     // Init year and initial tab
-    document.getElementById('y').textContent = new Date().getFullYear();
     const url = new URL(location.href);
     const qView = (url.searchParams.get('view')||'').toLowerCase();
     const saved = localStorage.getItem('multiSwitcher:view');
