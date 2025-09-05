@@ -62,10 +62,11 @@
     .open-drawer .drawer{ transform:none; }
 
     /* Layout main/iframe/footer */
-    main{ flex:1; }
-    .frame-wrap{ position:relative; height:calc(100svh - 60px); }
-    @supports(height:100dvh){ .frame-wrap{ height:calc(100dvh - 60px); } }
-    iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; background:#000; border-top:1px solid var(--line); }
+    main{ flex:1; display:flex; }
+    .frame-wrap{ position:relative; flex:1; min-height:0; }
+    
+    iframe{position:absolute; inset:0; width:100%; height:100%;border:0;background:transparent;}
+
     .hidden{ display:none !important; }
 
     /* ===== Responsive ===== */
