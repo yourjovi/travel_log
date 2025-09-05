@@ -10,14 +10,28 @@
 
     .wrap{ display:flex; flex-direction:column; min-height:100svh; }
 
-    header{ position:sticky; top:0; z-index:10; backdrop-filter:saturate(1.4) blur(8px); background:rgba(11,16,32,.75); border-bottom:1px solid var(--line); }
+    header{ position:sticky; top:0; z-index:20; backdrop-filter:saturate(1.4) blur(8px); background:rgba(11,16,32,.75); border-bottom:1px solid var(--line); }
     nav{ max-width:1100px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; padding:0 16px; }
     .logo{ font-weight:700; font-size:18px; letter-spacing:.5px; padding:14px 0; }
 
+    /* 漢堡按鈕 */
+    .hamburger{ all:unset; cursor:pointer; display:none; flex-direction:column; gap:4px; padding:12px; }
+    .hamburger span{ width:22px; height:2px; background:var(--fg); border-radius:1px; }
+
     .menu{ display:flex; gap:2px; }
-    .menu button{ all:unset; cursor:pointer; padding:14px 20px; font-weight:600; font-size:15px; color:var(--muted); transition:.25s; border-bottom:2px solid transparent; }
+    .menu button{ all:unset; cursor:pointer; padding:14px 20px; font-weight:600; font-size:15px; color:var(--muted); transition:.25s; border-bottom:2px solid transparent; display:block; }
     .menu button[aria-pressed="true"]{ color:var(--accent); border-color:var(--accent); }
     .menu button:hover{ color:var(--fg); }
+
+    /* 抽屜 */
+    .drawer{ position:fixed; top:0; left:0; width:220px; height:100%; background:var(--card); border-right:1px solid var(--line); transform:translateX(-100%); transition:transform .3s ease; z-index:30; padding-top:60px; }
+    .drawer.open{ transform:translateX(0); }
+    .drawer .menu{ flex-direction:column; }
+
+    @media(max-width:768px){
+      .menu{ display:none; }
+      .hamburger{ display:flex; }
+    }
 
     main{ flex:1; }
     .frame-wrap{ position:relative; height:calc(100svh - 60px); }
@@ -29,13 +43,38 @@
     .hint{ text-align:center; color:var(--muted); font-size:12px; padding:6px 10px; }
     footer{ border-top:1px solid var(--line); background:var(--card); color:var(--muted); font-size:12px; }
     .foot{ max-width:1100px; margin:0 auto; padding:10px 16px; }
+    /* === Mobile hamburger & drawer === */
+    .ham{ display:none; align-items:center; justify-content:center; width:40px; height:40px; border:1px solid var(--line); border-radius:10px; background:transparent; cursor:pointer; margin-right:8px; }
+    .ham .bar{ display:block; width:20px; height:2px; background:var(--fg); position:relative; }
+    .ham .bar::before,.ham .bar::after{ content:""; position:absolute; left:0; width:20px; height:2px; background:var(--fg); }
+    .ham .bar::before{ top:-6px; }
+    .ham .bar::after{ top:6px; }
+
+    .backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.4); backdrop-filter:blur(2px); opacity:0; pointer-events:none; transition:opacity .25s ease; }
+    .backdrop.show{ opacity:1; pointer-events:auto; }
+
+    .drawer{ position:fixed; top:0; left:0; width:78%; max-width:320px; height:100dvh; background:var(--card); border-right:1px solid var(--line); transform:translateX(-100%); transition:transform .25s ease; z-index:20; padding:12px; box-shadow:0 10px 30px rgba(0,0,0,.3); }
+    .drawer.open{ transform:translateX(0); }
+    .drawer .head{ display:flex; align-items:center; justify-content:space-between; padding:6px 4px 10px; }
+    .drawer .title{ font-weight:700; }
+    .drawer .list{ display:flex; flex-direction:column; gap:6px; padding-top:6px; }
+    .drawer .item{ all:unset; display:block; padding:12px 10px; border:1px solid var(--line); border-radius:10px; cursor:pointer; color:var(--fg); }
+    .drawer .item[aria-pressed="true"], .drawer .item:hover{ border-color:var(--accent); color:var(--accent); }
+
+    /* Desktop vs Mobile */
+    @media (max-width: 768px){
+      .menu{ display:none; }
+      .ham{ display:flex; }
+      nav{ padding:0 10px; }
+      .logo{ font-size:16px; }
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <header>
+   <header>
       <nav>
-        <div class="logo">四頁切換</div>
+        <div class="logo">旅行地圖時光機</div>
         <div class="menu" role="tablist" aria-label="切換內嵌頁面">
           <button class="tab" id="tab-a" role="tab" aria-controls="panel-a" aria-pressed="true">時間軸模式</button>
           <button class="tab" id="tab-b" role="tab" aria-controls="panel-b" aria-pressed="false">地圖模式</button>
@@ -44,6 +83,20 @@
         </div>
       </nav>
     </header>
+
+    <div class="backdrop" id="backdrop"></div>
+    <aside class="drawer" id="drawer" aria-hidden="true">
+      <div class="head">
+        <div class="title">選單</div>
+        <button class="btn" id="closeDrawer" aria-label="關閉選單">✕</button>
+      </div>
+      <div class="list" role="tablist" aria-label="手機抽屜選單">
+        <button class="item" data-view="a">時間軸模式</button>
+        <button class="item" data-view="b">地圖模式</button>
+        <button class="item" data-view="c">AI日記(Beta)</button>
+        <button class="item" data-view="d">我們頻道</button>
+      </div>
+    </aside>
 
     <main>
       <div class="frame-wrap">
@@ -106,8 +159,50 @@
       tabs[k].addEventListener('click', ()=> show(k));
     }
 
+    // Drawer logic
+    const hamburger = document.getElementById('hamburger');
+    const drawer = document.getElementById('drawer');
+    hamburger.addEventListener('click', ()=>{
+      drawer.classList.toggle('open');
+    });
+    drawer.querySelectorAll('.tab').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        show(btn.dataset.target);
+        drawer.classList.remove('open');
+      });
+    });
+
     document.getElementById('y').textContent = new Date().getFullYear();
     show(initial);
+      // === Drawer (mobile) ===
+    const ham = document.getElementById('ham');
+    const drawer = document.getElementById('drawer');
+    const backdrop = document.getElementById('backdrop');
+    const closeDrawerBtn = document.getElementById('closeDrawer');
+
+    function openDrawer(){
+      drawer.classList.add('open');
+      drawer.setAttribute('aria-hidden','false');
+      ham.setAttribute('aria-expanded','true');
+      backdrop.classList.add('show');
+      document.body.style.overflow='hidden';
+    }
+    function closeDrawer(){
+      drawer.classList.remove('open');
+      drawer.setAttribute('aria-hidden','true');
+      ham.setAttribute('aria-expanded','false');
+      backdrop.classList.remove('show');
+      document.body.style.overflow='';
+    }
+
+    ham.addEventListener('click', ()=> openDrawer());
+    closeDrawerBtn.addEventListener('click', ()=> closeDrawer());
+    backdrop.addEventListener('click', ()=> closeDrawer());
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeDrawer(); });
+
+    drawer.querySelectorAll('[data-view]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{ show(btn.dataset.view); closeDrawer(); });
+    });
   </script>
 </body>
 </html>
