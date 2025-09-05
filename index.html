@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>旅行地圖時光機</title>
+  <style>
+    :root{ --bg:#0b1020; --card:#0f152b; --line:#223; --fg:#e9eefc; --muted:#9fb0d1; --accent:#3b82f6; }
+    html,body{ height:100%; margin:0; background:var(--bg); color:var(--fg); font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans TC",sans-serif; }
+
+    .wrap{ display:flex; flex-direction:column; min-height:100svh; }
+
+    header{ position:sticky; top:0; z-index:10; backdrop-filter:saturate(1.4) blur(8px); background:rgba(11,16,32,.75); border-bottom:1px solid var(--line); }
+    nav{ max-width:1100px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; padding:0 16px; }
+    .logo{ font-weight:700; font-size:18px; letter-spacing:.5px; padding:14px 0; }
+
+    .menu{ display:flex; gap:2px; }
+    .menu button{ all:unset; cursor:pointer; padding:14px 20px; font-weight:600; font-size:15px; color:var(--muted); transition:.25s; border-bottom:2px solid transparent; }
+    .menu button[aria-pressed="true"]{ color:var(--accent); border-color:var(--accent); }
+    .menu button:hover{ color:var(--fg); }
+
+    main{ flex:1; }
+    .frame-wrap{ position:relative; height:calc(100svh - 60px); }
+    @supports(height:100dvh){ .frame-wrap{ height:calc(100dvh - 60px); } }
+
+    iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; background:#000; border-top:1px solid var(--line); }
+    .hidden{ display:none !important; }
+
+    .hint{ text-align:center; color:var(--muted); font-size:12px; padding:6px 10px; }
+    footer{ border-top:1px solid var(--line); background:var(--card); color:var(--muted); font-size:12px; }
+    .foot{ max-width:1100px; margin:0 auto; padding:10px 16px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <nav>
+        <div class="logo">四頁切換</div>
+        <div class="menu" role="tablist" aria-label="切換內嵌頁面">
+          <button class="tab" id="tab-a" role="tab" aria-controls="panel-a" aria-pressed="true">時間軸模式</button>
+          <button class="tab" id="tab-b" role="tab" aria-controls="panel-b" aria-pressed="false">地圖模式</button>
+          <button class="tab" id="tab-c" role="tab" aria-controls="panel-c" aria-pressed="false">AI日記(Beta)</button>
+          <button class="tab" id="tab-d" role="tab" aria-controls="panel-d" aria-pressed="false">我們頻道</button>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <div class="frame-wrap">
+        <iframe id="panel-a" title="頁面 A" loading="lazy" allow="fullscreen; picture-in-picture"></iframe>
+        <iframe id="panel-b" title="頁面 B" class="hidden" loading="lazy" allow="fullscreen; picture-in-picture"></iframe>
+        <iframe id="panel-c" title="頁面 C" class="hidden" loading="lazy" allow="fullscreen; picture-in-picture"></iframe>
+        <iframe id="panel-d" title="頁面 D" class="hidden" loading="lazy" allow="fullscreen; picture-in-picture"></iframe>
+      </div>
+      <div class="hint">可用網址參數 ?view=a / b / c / d 直接進到指定分頁。</div>
+    </main>
+
+    <footer>
+      <div class="foot">© <span id="y"></span> YourJovi · GitHub Pages Ready</div>
+    </footer>
+  </div>
+
+  <script>
+    const PAGES = {
+      a: "https://script.google.com/macros/s/AKfycbzgSuUqADNwwQLeIUOMQsG4lrdRqvLknyF3_Ty-V_pnM-Uo3RXLWnhOBqtuTeo_Ua5N/exec", // ← 改成你的「頁面 A」URL
+      b: "https://script.google.com/macros/s/AKfycbzgSuUqADNwwQLeIUOMQsG4lrdRqvLknyF3_Ty-V_pnM-Uo3RXLWnhOBqtuTeo_Ua5N/exec?view=map", // ← 改成你的「頁面 B」URL
+      c: "https://yourjovitraveling.blogspot.com", // ← 改成你的「頁面 C」URL
+      d: "https://youtube.com/@yourjovitravel?si=k0G-bldC8JuEp80m"  // ← 改成你的「頁面 D」URL
+    };
+
+    const tabs = {
+      a: document.getElementById('tab-a'),
+      b: document.getElementById('tab-b'),
+      c: document.getElementById('tab-c'),
+      d: document.getElementById('tab-d')
+    };
+    const frames = {
+      a: document.getElementById('panel-a'),
+      b: document.getElementById('panel-b'),
+      c: document.getElementById('panel-c'),
+      d: document.getElementById('panel-d')
+    };
+
+    function ensureSrc(which){
+      if(PAGES[which] && !frames[which].src){
+        frames[which].src = PAGES[which];
+      }
+    }
+
+    function show(which){
+      for(const k of Object.keys(tabs)){
+        tabs[k].setAttribute('aria-pressed', k===which);
+        frames[k].classList.toggle('hidden', k!==which);
+      }
+      ensureSrc(which);
+      history.replaceState(null, '', `?view=${which}`);
+      localStorage.setItem('multiSwitcher:view', which);
+    }
+
+    const url = new URL(location.href);
+    const qView = (url.searchParams.get('view')||'').toLowerCase();
+    const saved = localStorage.getItem('multiSwitcher:view');
+    const initial = (['a','b','c','d'].includes(qView)) ? qView : (['a','b','c','d'].includes(saved) ? saved : 'a');
+
+    for(const k of Object.keys(tabs)){
+      tabs[k].addEventListener('click', ()=> show(k));
+    }
+
+    document.getElementById('y').textContent = new Date().getFullYear();
+    show(initial);
+  </script>
+</body>
+</html>
