@@ -99,6 +99,22 @@
   outline: none;
   box-shadow: none;
 }
+/* ===== New videos notice bar ===== */
+.newbar{
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  background: #0f3b2c;                 /* 深綠底（可改） */
+}
+.newbar-btn{
+  all:unset;
+  display:block; width:100%;
+  text-align:center; cursor:pointer;
+  padding:10px 14px; font-weight:800;
+  color:#a7f3d0;                        /* 薄荷綠字（可改） */
+}
+.newbar-btn:hover{ color:#ffffff; }
+.hidden{ display:none !important; }     /* 你檔案裡已有 hidden 類，可重用 */
+  
   </style>
 </head>
 <body>
@@ -121,6 +137,12 @@
           <button class="tab" id="tab-d" role="tab" aria-controls="panel-d" aria-pressed="false">我們頻道</button>
         </div>
       </nav>
+      <!-- New videos notice bar -->
+<div id="newBar" class="newbar hidden" role="status" aria-live="polite">
+  <button id="newBarBtn" class="newbar-btn" type="button">
+    🔔 有新影片上線，點我更新頁面 ↻
+  </button>
+</div>
     </header>
 
     <!-- Backdrop + Drawer (mobile) -->
@@ -182,6 +204,42 @@
     const btnHamburger = document.getElementById('btn-hamburger');
     const btnClose = document.getElementById('btn-close');
     const drawerBtns = Array.from(document.querySelectorAll('.drawer-btn'));
+    
+  // ====== New videos notice logic ======
+  const newBar    = document.getElementById('newBar');
+  const newBarBtn = document.getElementById('newBarBtn');
+  let refreshLock = false;   // 點擊後 15 秒內不重複彈提示
+
+  // 只接受來自 GAS 子頁（script.google.com）訊息
+  window.addEventListener('message', (e)=>{
+    try{
+      if (!/^https:\/\/script\.google\.com/.test(e.origin)) return;
+      const data = e.data || {};
+      if (data.type === 'videos:changed' && !refreshLock) {
+        newBar.classList.remove('hidden');
+      }
+    }catch(_){}
+  });
+
+  // 按下去才同步重整「時光旅行(a)／地圖旅行(b)」
+  newBarBtn.addEventListener('click', ()=>{
+    refreshLock = true;
+    newBar.classList.add('hidden');
+
+    ['a','b'].forEach(k=>{
+      if (frames[k].src) {
+        // 已載入過：直接 reload
+        try { frames[k].contentWindow.location.reload(); }
+        catch { frames[k].src = frames[k].src; }
+      } else {
+        // 尚未載入：補載一次
+        ensureSrc(k);
+      }
+    });
+
+    // 15 秒內不再顯示，避免連續彈
+    setTimeout(()=>{ refreshLock = false; }, 15000);
+  });
 
     function ensureSrc(which){
       if(PAGES[which] && !frames[which].src){
