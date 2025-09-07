@@ -99,11 +99,6 @@
   outline: none;
   box-shadow: none;
 }
-/* ===== New videos notice bar ===== */
-.newbar{position:sticky; top:0; z-index:30; background:#102046; border-bottom:1px solid var(--line); padding:8px; text-align:center;}
-.newbar-btn{all:unset; cursor:pointer; background:#3b82f6; color:#fff; padding:8px 14px; border-radius:999px; font-weight:700;}
-.newbar-btn:hover{filter:brightness(1.05);}
-
   
   </style>
 </head>
@@ -127,10 +122,6 @@
           <button class="tab" id="tab-d" role="tab" aria-controls="panel-d" aria-pressed="false">我們頻道</button>
         </div>
       </nav>
-      <!-- New videos notice bar -->
-<div id="newBar" class="newbar" hidden>
-  <button id="newBarBtn" class="newbar-btn" type="button">🎉 有新影片！點我更新</button>
-</div>
     </header>
 
     <!-- Backdrop + Drawer (mobile) -->
@@ -192,42 +183,6 @@
     const btnHamburger = document.getElementById('btn-hamburger');
     const btnClose = document.getElementById('btn-close');
     const drawerBtns = Array.from(document.querySelectorAll('.drawer-btn'));
-    
-  // ====== New videos notice logic ======
-  const newBar    = document.getElementById('newBar');
-  const newBarBtn = document.getElementById('newBarBtn');
-  let refreshLock = false;   // 點擊後 15 秒內不重複彈提示
-
-  // 只接受來自 Apps Script 子頁的訊息
-window.addEventListener('message', (e)=>{
-  if (!/^https:\/\/script\.google(?:usercontent)?\.com$/.test(e.origin)) return;
-  const d = e.data || {};
-  if (d.type === 'videos:changed') {
-    const bar = document.getElementById('newBar');
-    if (bar) bar.hidden = false;
-  }
-});
-
-// 點擊後才重載子頁 A/B
-(function(){
-  const btn = document.getElementById('newBarBtn');
-  const bar = document.getElementById('newBar');
-
-  function reloadFrame(which){
-    if (!frames[which]) return;
-    // 重新指派帶隨機參數的 URL，確保整頁重載且避開快取
-    const u = new URL(PAGES[which]);
-    u.searchParams.set('_r', Date.now());
-    frames[which].src = u.toString();
-  }
-
-  btn?.addEventListener('click', ()=>{
-    bar && (bar.hidden = true);
-    // 只有兩個內嵌頁會讀影片資料：A(時間軸) 與 B(地圖)
-    reloadFrame('a');
-    reloadFrame('b');
-  });
-})();
 
     function ensureSrc(which){
       if(PAGES[which] && !frames[which].src){
