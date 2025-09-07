@@ -100,20 +100,10 @@
   box-shadow: none;
 }
 /* ===== New videos notice bar ===== */
-.newbar{
-  border-top:1px solid var(--line);
-  border-bottom:1px solid var(--line);
-  background: #0f3b2c;                 /* 深綠底（可改） */
-}
-.newbar-btn{
-  all:unset;
-  display:block; width:100%;
-  text-align:center; cursor:pointer;
-  padding:10px 14px; font-weight:800;
-  color:#a7f3d0;                        /* 薄荷綠字（可改） */
-}
-.newbar-btn:hover{ color:#ffffff; }
-.hidden{ display:none !important; }     /* 你檔案裡已有 hidden 類，可重用 */
+.newbar{position:sticky; top:0; z-index:30; background:#102046; border-bottom:1px solid var(--line); padding:8px; text-align:center;}
+.newbar-btn{all:unset; cursor:pointer; background:#3b82f6; color:#fff; padding:8px 14px; border-radius:999px; font-weight:700;}
+.newbar-btn:hover{filter:brightness(1.05);}
+
   
   </style>
 </head>
@@ -138,10 +128,8 @@
         </div>
       </nav>
       <!-- New videos notice bar -->
-<div id="newBar" class="newbar hidden" role="status" aria-live="polite">
-  <button id="newBarBtn" class="newbar-btn" type="button">
-    🔔 有新影片上線，點我更新頁面 ↻
-  </button>
+<div id="newBar" class="newbar" hidden>
+  <button id="newBarBtn" class="newbar-btn" type="button">🎉 有新影片！點我更新</button>
 </div>
     </header>
 
@@ -177,8 +165,8 @@
   <script>
     /* ===== Your pages mapping ===== */
     const PAGES = {
-      a: "https://script.google.com/macros/s/AKfycbwUeB6nT1A_G_VB7lxC-WioQ0dZ6xPAjRPFJQltIZzLb5O7La6rpBoemkQwU1gfdxQX/exec",
-      b: "https://script.google.com/macros/s/AKfycbwUeB6nT1A_G_VB7lxC-WioQ0dZ6xPAjRPFJQltIZzLb5O7La6rpBoemkQwU1gfdxQX/exec?view=map",
+      a: "https://script.google.com/macros/s/AKfycbw1hcNXV5S0C7Qd6K-osWCS4YYWE2_3tcUvQsyxSKQokkOKmW93Q77NTlc0hTwsg1DH/exec",
+      b: "https://script.google.com/macros/s/AKfycbw1hcNXV5S0C7Qd6K-osWCS4YYWE2_3tcUvQsyxSKQokkOKmW93Q77NTlc0hTwsg1DH/exec?view=map",
       c: "https://yourjovitraveling.blogspot.com",
       d: "https://youtube.com/@yourjovitravel?si=k0G-bldC8JuEp80m"
     };
@@ -210,36 +198,36 @@
   const newBarBtn = document.getElementById('newBarBtn');
   let refreshLock = false;   // 點擊後 15 秒內不重複彈提示
 
-  // 只接受來自 GAS 子頁（script.google.com）訊息
-  window.addEventListener('message', (e)=>{
-    try{
-      if (!/^https:\/\/script\.google\.com/.test(e.origin)) return;
-      const data = e.data || {};
-      if (data.type === 'videos:changed' && !refreshLock) {
-        newBar.classList.remove('hidden');
-      }
-    }catch(_){}
+  // 只接受來自 Apps Script 子頁的訊息
+window.addEventListener('message', (e)=>{
+  if (!/^https:\/\/script\.google\.com/.test(e.origin)) return;
+  const d = e.data || {};
+  if (d.type === 'videos:changed') {
+    const bar = document.getElementById('newBar');
+    if (bar) bar.hidden = false;
+  }
+});
+
+// 點擊後才重載子頁 A/B
+(function(){
+  const btn = document.getElementById('newBarBtn');
+  const bar = document.getElementById('newBar');
+
+  function reloadFrame(which){
+    if (!frames[which]) return;
+    // 重新指派帶隨機參數的 URL，確保整頁重載且避開快取
+    const u = new URL(PAGES[which]);
+    u.searchParams.set('_r', Date.now());
+    frames[which].src = u.toString();
+  }
+
+  btn?.addEventListener('click', ()=>{
+    bar && (bar.hidden = true);
+    // 只有兩個內嵌頁會讀影片資料：A(時間軸) 與 B(地圖)
+    reloadFrame('a');
+    reloadFrame('b');
   });
-
-  // 按下去才同步重整「時光旅行(a)／地圖旅行(b)」
-  newBarBtn.addEventListener('click', ()=>{
-    refreshLock = true;
-    newBar.classList.add('hidden');
-
-    ['a','b'].forEach(k=>{
-      if (frames[k].src) {
-        // 已載入過：直接 reload
-        try { frames[k].contentWindow.location.reload(); }
-        catch { frames[k].src = frames[k].src; }
-      } else {
-        // 尚未載入：補載一次
-        ensureSrc(k);
-      }
-    });
-
-    // 15 秒內不再顯示，避免連續彈
-    setTimeout(()=>{ refreshLock = false; }, 15000);
-  });
+})();
 
     function ensureSrc(which){
       if(PAGES[which] && !frames[which].src){
