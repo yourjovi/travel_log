@@ -165,8 +165,8 @@
   <script>
     /* ===== Your pages mapping ===== */
     const PAGES = {
-      a: "https://script.google.com/macros/s/AKfycbw1hcNXV5S0C7Qd6K-osWCS4YYWE2_3tcUvQsyxSKQokkOKmW93Q77NTlc0hTwsg1DH/exec",
-      b: "https://script.google.com/macros/s/AKfycbw1hcNXV5S0C7Qd6K-osWCS4YYWE2_3tcUvQsyxSKQokkOKmW93Q77NTlc0hTwsg1DH/exec?view=map",
+      a: "https://script.google.com/macros/s/AKfycbzr6ddtKdXaAD0BW9JbBpoVg5oXESKna3TA8STHpGblsZ_s6PM93bggdP_oB5KhAvfh/exec",
+      b: "https://script.google.com/macros/s/AKfycbzr6ddtKdXaAD0BW9JbBpoVg5oXESKna3TA8STHpGblsZ_s6PM93bggdP_oB5KhAvfh/exec?view=map",
       c: "https://yourjovitraveling.blogspot.com",
       d: "https://youtube.com/@yourjovitravel?si=k0G-bldC8JuEp80m"
     };
@@ -200,7 +200,7 @@
 
   // 只接受來自 Apps Script 子頁的訊息
 window.addEventListener('message', (e)=>{
-  if (!/^https:\/\/script\.google\.com/.test(e.origin)) return;
+  if (!/^https:\/\/script\.google(?:usercontent)?\.com$/.test(e.origin)) return;
   const d = e.data || {};
   if (d.type === 'videos:changed') {
     const bar = document.getElementById('newBar');
