@@ -100,7 +100,43 @@
   outline: none;
   box-shadow: none;
 }
-  
+  /* Desktop：把選單整排往右靠 */
+@media (min-width: 901px){
+  .menu{ margin-left: auto; }  /* 讓 .logo 在左、.menu 貼右 */
+}
+/* CTA 小膠囊：預設隱藏，播放時加 .on 顯示 */
+.promo-rotator{
+  display:none; align-items:center; gap:.5rem;
+  margin-left:12px; margin-right:auto; /* 讓它卡在 logo 和 menu 中間 */
+  padding:.28rem .64rem; border:1px solid var(--line, #e5e7eb);
+  border-radius:999px; background:var(--card, #fff);
+  color:var(--fg, #111); text-decoration:none;
+  font-size:14px; line-height:1; white-space:nowrap;
+  max-width:420px; overflow:hidden;
+}
+.promo-rotator.on{ display:flex; }
+
+/* 文字進出場動畫（輕微） */
+.promo-rotator .pr-msg{ display:inline-block; animation:pr-fade 2.1s ease-in-out both; }
+@keyframes pr-fade{
+  0%{opacity:0; transform:translateY(6px);}
+  10%{opacity:1; transform:translateY(0);}
+  90%{opacity:1;}
+  100%{opacity:0; transform:translateY(-6px);}
+}
+
+/* 手機：更小、更貼近標題；選單多半隱藏不影響 */
+@media (max-width: 900px){
+  .promo-rotator{ font-size:13px; max-width:60vw; }
+}
+@media (max-width: 480px){
+  .promo-rotator{ font-size:12.5px; padding:.22rem .52rem; }
+}
+
+/* 減少動態偏好：關閉動畫但仍顯示一次 */
+@media (prefers-reduced-motion: reduce){
+  .promo-rotator .pr-msg{ animation:none !important; }
+}
   </style>
 </head>
 <body>
@@ -115,12 +151,20 @@
         </button>
         <div class="logo">旅行地圖時光機</div>
 
+        <!-- CTA 輪播（logo 後、menu 前） -->
+<a class="promo-rotator" id="promoRotator"
+   href="https://www.youtube.com/@UCBO0jFbcjbi2f3mxnsEDxDg?sub_confirmation=1"
+   target="_blank" rel="noopener">
+  <span class="pr-icon">🔔</span>
+  <span class="pr-msg" aria-live="polite"></span>
+</a>
+
         <!-- Desktop tabs -->
         <div class="menu" role="tablist" aria-label="切換內嵌頁面">
-          <button class="tab" id="tab-a" role="tab" aria-controls="panel-a" aria-pressed="true">時光旅行</button>
-          <button class="tab" id="tab-b" role="tab" aria-controls="panel-b" aria-pressed="false">地圖旅行</button>
-          <button class="tab" id="tab-c" role="tab" aria-controls="panel-c" aria-pressed="false">AI日記(Beta)</button>
-          <button class="tab" id="tab-d" role="tab" aria-controls="panel-d" aria-pressed="false">我們頻道</button>
+          <button class="tab" id="tab-a" role="tab" aria-controls="panel-a" aria-pressed="true">Time Travel(時光旅行)</button>
+          <button class="tab" id="tab-b" role="tab" aria-controls="panel-b" aria-pressed="false">Map Travel(地圖旅行)</button>
+          <button class="tab" id="tab-c" role="tab" aria-controls="panel-c" aria-pressed="false">AI Diary 日記(Beta)</button>
+          <button class="tab" id="tab-d" role="tab" aria-controls="panel-d" aria-pressed="false">YourJovi平台頻道</button>
         </div>
       </nav>
     </header>
@@ -261,6 +305,51 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js', { scope }).catch(console.error);
   });
 }
+
+(function(){
+  const el = document.getElementById('promoRotator');
+  if(!el) return;
+
+  // 你要輪播的訊息（可自行增減）
+  const msgs = ['先訂先贏', '新影片通知', '訂閱解鎖'];
+  const PER_MSG_MS = 2400;     // 每句顯示多久（含淡入/淡出）
+  const ROUNDS = 1;            // 播幾輪（1 = 每句播一次就收起）
+  const ONCE_PER_SESSION = true; // 同一分頁工作階段只顯示一次
+
+  // 若本工作階段已播過，就不再出現
+  try { if (ONCE_PER_SESSION && sessionStorage.getItem('promoRotatorShown')==='1') return; } catch(e){}
+
+  const span = el.querySelector('.pr-msg');
+  let i = 0, round = 0;
+
+  function tick(){
+    // 設文字並重觸發 CSS 動畫
+    span.textContent = msgs[i];
+    span.style.animation = 'none'; void span.offsetWidth; span.style.animation = null;
+
+    i++;
+    if (i >= msgs.length){
+      i = 0; round++;
+      if (round >= ROUNDS){
+        // 最後一句播完再延遲一下關閉
+        return setTimeout(stop, PER_MSG_MS);
+      }
+    }
+    setTimeout(tick, PER_MSG_MS);
+  }
+
+  function start(){
+    el.classList.add('on');
+    tick();
+  }
+  function stop(){
+    el.classList.remove('on');
+    try { sessionStorage.setItem('promoRotatorShown','1'); } catch(e){}
+  }
+
+  // 頁面載入後啟動
+  window.addEventListener('load', start);
+})();
     
   </script>
 </body>
