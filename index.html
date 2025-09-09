@@ -153,7 +153,7 @@
 
         <!-- CTA 輪播（logo 後、menu 前） -->
 <a class="promo-rotator" id="promoRotator"
-   href="https://www.youtube.com/@UCBO0jFbcjbi2f3mxnsEDxDg?sub_confirmation=1"
+   href="https://www.youtube.com/channel/UCBO0jFbcjbi2f3mxnsEDxDg?sub_confirmation=1"
    target="_blank" rel="noopener">
   <span class="pr-icon">🔔</span>
   <span class="pr-msg" aria-live="polite"></span>
@@ -306,50 +306,74 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+<script>
 (function(){
-  const el = document.getElementById('promoRotator');
+  const el   = document.getElementById('promoRotator');
   if(!el) return;
-
-  // 你要輪播的訊息（可自行增減）
-  const msgs = ['先訂先贏', '新影片通知', '訂閱解鎖'];
-  const PER_MSG_MS = 2400;     // 每句顯示多久（含淡入/淡出）
-  const ROUNDS = 1;            // 播幾輪（1 = 每句播一次就收起）
-  const ONCE_PER_SESSION = true; // 同一分頁工作階段只顯示一次
-
-  // 若本工作階段已播過，就不再出現
-  try { if (ONCE_PER_SESSION && sessionStorage.getItem('promoRotatorShown')==='1') return; } catch(e){}
-
   const span = el.querySelector('.pr-msg');
-  let i = 0, round = 0;
 
-  function tick(){
-    // 設文字並重觸發 CSS 動畫
-    span.textContent = msgs[i];
+  // 要輪播的訊息（可增減）
+  const MSGS = ['先訂先贏', '新影片通知', '訂閱解鎖'];
+
+  // ===== 可調參數 =====
+  const FIRST_SHOW_DELAY_MS = 2000;         // 進站多久後第一次顯示
+  const DWELL_MS            = 60_000;       // 每次顯示停留時間（約 1 分鐘）
+  const GAP_MIN_MS          = 5*60_000;     // 下一次顯示的最短間隔（5 分鐘）
+  const GAP_MAX_MS          = 15*60_000;    // 下一次顯示的最長間隔（15 分鐘）
+  // =====================
+
+  let lastIdx = -1;
+  let tShow = 0, tHide = 0;
+
+  function randBetween(min, max){
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+  function pickNextIndex(){
+    if (MSGS.length === 1) return 0;
+    let idx;
+    do { idx = Math.floor(Math.random() * MSGS.length); } while (idx === lastIdx);
+    lastIdx = idx;
+    return idx;
+  }
+  function setMsg(text){
+    // 重新觸發 CSS 的淡入/淡出動畫
+    span.textContent = text;
     span.style.animation = 'none'; void span.offsetWidth; span.style.animation = null;
-
-    i++;
-    if (i >= msgs.length){
-      i = 0; round++;
-      if (round >= ROUNDS){
-        // 最後一句播完再延遲一下關閉
-        return setTimeout(stop, PER_MSG_MS);
-      }
-    }
-    setTimeout(tick, PER_MSG_MS);
   }
 
-  function start(){
+  function showOnce(){
+    clearTimeout(tShow); clearTimeout(tHide);
+    setMsg(MSGS[pickNextIndex()]);
     el.classList.add('on');
-    tick();
+    tHide = setTimeout(hide, DWELL_MS);
   }
-  function stop(){
+  function hide(){
     el.classList.remove('on');
-    try { sessionStorage.setItem('promoRotatorShown','1'); } catch(e){}
+    scheduleNext();
+  }
+  function scheduleNext(){
+    const gap = randBetween(GAP_MIN_MS, GAP_MAX_MS);
+    tShow = setTimeout(() => {
+      // 若使用者切到背景頁，再緩一緩（避免他不在時彈出）
+      if (document.hidden) return scheduleNext();
+      showOnce();
+    }, gap);
   }
 
-  // 頁面載入後啟動
-  window.addEventListener('load', start);
+  // 首次顯示
+  setTimeout(() => {
+    if (!document.hidden) showOnce();
+    else scheduleNext();
+  }, FIRST_SHOW_DELAY_MS);
+
+  // 使用者返回此分頁時，如正好沒有顯示也沒有排程，就排一個短延遲
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && !el.classList.contains('on') && !tShow){
+      tShow = setTimeout(showOnce, 5000);
+    }
+  });
 })();
+</script>
     
   </script>
 </body>
