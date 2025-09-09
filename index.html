@@ -196,10 +196,10 @@
         </button>
       </div>
       <div class="drawer-body">
-        <button class="drawer-btn" data-tab="a" aria-pressed="true">時光旅行</button>
-        <button class="drawer-btn" data-tab="b" aria-pressed="false">地圖旅行</button>
-        <button class="drawer-btn" data-tab="c" aria-pressed="false">AI日記(Beta)</button>
-        <button class="drawer-btn" data-tab="d" aria-pressed="false">我們頻道</button>
+        <button class="drawer-btn" data-tab="a" aria-pressed="true">Time Travel(時光旅行)</button>
+        <button class="drawer-btn" data-tab="b" aria-pressed="false">Map Travel(地圖旅行)</button>
+        <button class="drawer-btn" data-tab="c" aria-pressed="false">AI Diary 日記(Beta)</button>
+        <button class="drawer-btn" data-tab="d" aria-pressed="false">YourJovi平台頻道</button>
       </div>
     </aside>
 
@@ -215,11 +215,12 @@
 
   <script>
     /* ===== Your pages mapping ===== */
+    const bas_url = "https://script.google.com/macros/s/AKfycbzFsDf2ktX-z_JZKTQvLilzohdSsOZ_B-eUNX12bUiExE33ECI3RsjeU1dP0x9nrEeg/exec";
     const PAGES = {
-      a: "https://script.google.com/macros/s/AKfycbx-WII_bOJ0Pe77pMshKcMENbybQC8OZCUnHYuCLWjRqtvrRixH8D7OzdXMaCI9ssKc/exec",
-      b: "https://script.google.com/macros/s/AKfycbx-WII_bOJ0Pe77pMshKcMENbybQC8OZCUnHYuCLWjRqtvrRixH8D7OzdXMaCI9ssKc/exec?view=map",
-      c: "https://script.google.com/macros/s/AKfycbx-WII_bOJ0Pe77pMshKcMENbybQC8OZCUnHYuCLWjRqtvrRixH8D7OzdXMaCI9ssKc/exec?view=diary",
-      d: "https://script.google.com/macros/s/AKfycbx-WII_bOJ0Pe77pMshKcMENbybQC8OZCUnHYuCLWjRqtvrRixH8D7OzdXMaCI9ssKc/exec?view=help"
+      a: bas_url,
+      b: bas_url + "?view=map",
+      c: bas_url + "?view=diary",
+      d: bas_url + "?view=help"
     };
 
     /* ===== Tab elements ===== */
@@ -327,7 +328,25 @@ if ('serviceWorker' in navigator) {
   const span = el.querySelector('.pr-msg');
 
   // 要輪播的訊息（可增減）
-  const MSGS = ['先訂先贏', '新影片通知', '訂閱解鎖'];
+  const MSGS = [
+  '先訂先贏 ✨',
+  '新片通知 ✅',
+  '訂閱解鎖 🎁',
+  '首播不缺席 ⏰',
+  '搶先看旅程 ✈️',
+  '每日 Vlog 📹',
+  '1分鐘看世界 ⏱️',
+  'AI日記上線 🤖',
+  '代表照出爐 📸',
+  '地圖新地標 🗺️',
+  '時間軸連播 ▶️',
+  '旅遊攻略更新 📍',
+  '航線圖更新 🧭',
+  '追蹤我們 ❤️',
+  '按讚＋分享 👍',
+  '下一站去哪？🧳'
+];
+
 
   // ===== 可調參數 =====
   const FIRST_SHOW_DELAY_MS = 2000;         // 進站多久後第一次顯示
