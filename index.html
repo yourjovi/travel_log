@@ -137,6 +137,21 @@
 @media (prefers-reduced-motion: reduce){
   .promo-rotator .pr-msg{ animation:none !important; }
 }
+/* 讓 CTA 文字只淡入並維持顯示（覆蓋舊的 pr-fade） */
+.promo-rotator .pr-msg{
+  animation: none !important;  /* 取消舊的 2.1s 淡出動畫 */
+  opacity: 1;
+  transform: none;
+}
+.promo-rotator.on .pr-msg{
+  animation: pr-fade-in .3s ease-out both !important; /* 只做淡入 */
+}
+
+@keyframes pr-fade-in{
+  from{ opacity:0; transform: translateY(6px); }
+  to  { opacity:1; transform: translateY(0); }
+}
+
   </style>
 </head>
 <body>
@@ -201,10 +216,10 @@
   <script>
     /* ===== Your pages mapping ===== */
     const PAGES = {
-      a: "https://script.google.com/macros/s/AKfycbzr6ddtKdXaAD0BW9JbBpoVg5oXESKna3TA8STHpGblsZ_s6PM93bggdP_oB5KhAvfh/exec",
-      b: "https://script.google.com/macros/s/AKfycbzr6ddtKdXaAD0BW9JbBpoVg5oXESKna3TA8STHpGblsZ_s6PM93bggdP_oB5KhAvfh/exec?view=map",
-      c: "https://script.google.com/macros/s/AKfycbz9xppfCE5NJQwRAdfTMGSAcHhIzTv6NBNAY_NDicHev1sGPFpw1l_-2dVkUB8E0DJk/exec",
-      d: "https://script.google.com/macros/s/AKfycbz9xppfCE5NJQwRAdfTMGSAcHhIzTv6NBNAY_NDicHev1sGPFpw1l_-2dVkUB8E0DJk/exec?page=help"
+      a: "https://script.google.com/macros/s/AKfycbx-WII_bOJ0Pe77pMshKcMENbybQC8OZCUnHYuCLWjRqtvrRixH8D7OzdXMaCI9ssKc/exec",
+      b: "https://script.google.com/macros/s/AKfycbx-WII_bOJ0Pe77pMshKcMENbybQC8OZCUnHYuCLWjRqtvrRixH8D7OzdXMaCI9ssKc/exec?view=map",
+      c: "https://script.google.com/macros/s/AKfycbx-WII_bOJ0Pe77pMshKcMENbybQC8OZCUnHYuCLWjRqtvrRixH8D7OzdXMaCI9ssKc/exec?view=diary",
+      d: "https://script.google.com/macros/s/AKfycbx-WII_bOJ0Pe77pMshKcMENbybQC8OZCUnHYuCLWjRqtvrRixH8D7OzdXMaCI9ssKc/exec?view=help"
     };
 
     /* ===== Tab elements ===== */
