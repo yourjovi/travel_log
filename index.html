@@ -249,7 +249,7 @@ html{ -webkit-text-size-adjust: 100%; }
 
   <script>
     /* ===== Your pages mapping ===== */
-    const bas_url = "https://script.google.com/macros/s/AKfycbyu9_qt2DCZ2OS5kf3NwPzmA9sj6tcFXizUjup-wCqrCxS7GtHR5m5Y4hPW58XGtVKg/exec";
+    const bas_url = "https://script.google.com/macros/s/AKfycbxRNpYC5MlZDQSPt5FUzM9n3trxwiLBjfZ3O8LYTPaQp-RiyX16m4kqpMJjbkhzodZ2/exec";
     const PAGES = {
       a: bas_url,
       b: bas_url + "?view=map",
@@ -280,10 +280,15 @@ html{ -webkit-text-size-adjust: 100%; }
     const drawerBtns = Array.from(document.querySelectorAll('.drawer-btn'));
 
     function ensureSrc(which){
-      if(PAGES[which] && !frames[which].src){
-        frames[which].src = PAGES[which];
-      }
-    }
+  if (PAGES[which] && !frames[which].src) {
+    const url = new URL(location.href);
+    // 保留除了 view 以外的所有參數
+    url.searchParams.delete('view');
+    const extra = url.searchParams.toString();
+    frames[which].src = PAGES[which] + (extra ? '&' + extra : '');
+  }
+}
+
 
     function show(which){
       for(const k of Object.keys(tabs)){
