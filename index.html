@@ -249,7 +249,7 @@ html{ -webkit-text-size-adjust: 100%; }
 
   <script>
     /* ===== Your pages mapping ===== */
-    const bas_url = "https://script.google.com/macros/s/AKfycbw5I1EqVTrKELxO5QgDU9-06ADsYDHRFXb9ipPZEqA-xMeFythAvgDX3emZc_1UlqLb/exec";
+    const bas_url = "https://script.google.com/macros/s/AKfycbyu9_qt2DCZ2OS5kf3NwPzmA9sj6tcFXizUjup-wCqrCxS7GtHR5m5Y4hPW58XGtVKg/exec";
     const PAGES = {
       a: bas_url,
       b: bas_url + "?view=map",
@@ -343,11 +343,20 @@ html{ -webkit-text-size-adjust: 100%; }
     }
 
     // Init year and initial tab
-    const url = new URL(location.href);
-    const qView = (url.searchParams.get('view')||'').toLowerCase();
-    const saved = localStorage.getItem('multiSwitcher:view');
-    const initial = (['a','b','c','d'].includes(qView)) ? qView : (['a','b','c','d'].includes(saved) ? saved : 'a');
-    show(initial);
+const url = new URL(location.href);
+const qView = (url.searchParams.get('view')||'').toLowerCase();
+const mapDay = url.searchParams.get('map_day');
+const mapAction = url.searchParams.get('map_action');
+
+const saved = localStorage.getItem('multiSwitcher:view');
+let initial = (['a','b','c','d'].includes(qView)) ? qView
+            : (['a','b','c','d'].includes(saved) ? saved : 'a');
+
+// 若帶了 map_day 要直接打開地圖頁
+if (mapDay && mapAction === 'play') initial = 'b';
+
+show(initial);
+
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -441,6 +450,18 @@ if ('serviceWorker' in navigator) {
     }
   });
 })();
+
+    // 在定義 frames 後面加上這段（frames.b 已存在）
+frames.b.addEventListener('load', () => {
+  // 若網址帶了 map_day=YYYY-MM-DD&map_action=play，就通知子頁播放
+  if (mapDay && mapAction === 'play') {
+    try {
+      frames.b.contentWindow.postMessage({ type:'playDay', day: mapDay }, 'https://www.yourjovi.com'); 
+      // 若地圖頁是跑在 GAS 網域，這裡可改成 '*'
+    } catch(_) {}
+  }
+});
+
 </script>
 </body>
 </html>
